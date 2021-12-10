@@ -1,0 +1,540 @@
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <title>Cutout multiplayer</title>
+    <meta name="description" content="Cutout Fest Metaverse">
+    <meta name="author" content="Emmanuel Martínez">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="dist/aframe-v1.2.0.js"></script>
+    <script src="dist/aframe-environment-component.min.js"></script>
+    <script src="https://unpkg.com/hydra-synth"></script>
+    <script src="./aframe-particle-system-component.min.js"></script>
+    <script src="./dist/aframe-effects.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.6.1-rc.3/web3.min.js" integrity="sha512-0KTZZdA9E3vaLClQkC6S9roiHr9J2A79Q/BvcIwd8LjRVAQcwrT1zorS7hfZ7B3Nr/u6bYzNG/wXOAOADdJ7qQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.10/dist/sweetalert2.all.min.js"></script>
+
+    <script src="https://unpkg.com/aframe-randomizer-components@^3.0.1/dist/aframe-randomizer-components.min.js"></script>
+    <script src="/js/spawn-in-circle.component.js"></script>
+
+    <link rel="stylesheet" href="styles/styles.css">
+
+
+
+    <script type="script-effect" id="customFilter" data-defaults="tDiffuse 0.3 0.3 1." data-diffuse>
+      void $main(inout vec4 c, vec4 o, vec2 uv, float d){
+          float t = time * mix(1., 1000., abs(sin(time * 10. + uv.x)));
+          uv = vec2(uv.x + resolution.z * sin(t * c.r + c.b), uv.y - resolution.w * cos(t * c.b + c.r));
+          c.rgb += smoothstep(0.3, 0.9, texture2D($0,uv).rgb  ) * mix( $1, $2, abs(sin(time * $3))) ;
+      }
+    </script>
+
+    <script type="script-effect" id="blendOutline" data-diffuse>
+      void $main(inout vec4 c, vec4 o, vec2 uv, float d){
+          c.rgb = mix(c.rgb, o.rgb, smoothstep(0.1,0.3,o.a));
+      }
+    </script>
+
+    <script type="script-effect" id="add" data-defaults="bloom_texture bloom_intensity" data-diffuse>
+      void $main(inout vec4 c, vec4 o, vec2 uv, float d){
+          c.rgb += pow(texture2D($0, uv).rgb,vec3(2.)) * $1;
+      }
+    </script>
+
+
+  </head>
+  <body>
+
+
+    <script>
+
+</script>
+
+    <!--Loader Home -->
+
+    <div id="homeLoading" class="container">
+      <h1 id="loadingText" class="animate">CutOut Fest</h1>
+      <h1 id="startText" class="start" style="display:none" >START</h1>
+    </div>
+
+
+    <!--Obras en alta calidad-->
+
+    <video id="levelRebirthSRC" style="display: none;" webkit-playsinline playsinline crossorigin="anonymous" loop="true" src="assets/obras/cultofdang/levelRebirth.mp4"></video>
+    <video id="memoriasConfusasSRC" style="display: none;" webkit-playsinline playsinline crossorigin="anonymous" loop="true" src="assets/obras/estebanAzuela/memoriasConfusas.mp4"></video>
+    <video id="memoriasConfusasSRC" style="display: none;" webkit-playsinline playsinline crossorigin="anonymous" loop="true" src="assets/obras/salvadorherrera/pontifex.mp4"></video>
+    <canvas id="hydraCanvasSam" style="display: none;" width="512" height="512"></canvas>
+
+
+
+    <audio id="myaudio" controls autoplay>
+      <source src="assets/audio/metaAmbient.mp3" type="audio/ogg">
+      Your browser does not support the audio element.
+    </audio> 
+
+
+    <!--fog="type: linear; color: #AAA; far: 10; near: 1" ||  Final fog="type: exponential; color: #596269; density:0.009"  || effects="bloom" bloom="filter: bloom!, bloom.filter, #customFilter(bloom_texture 0.3 0.6 0.5); strength: 0.35; radius:0.5" -->
+    <a-scene fog="type: exponential; color: #596269; density:0.009" background="color: #596269">
+
+      <a-assets id="assetsSystem">
+
+              
+
+
+                <a-asset-item id="avatarSRC" src="assets/modelos/avatarColor.glb"></a-asset-item>
+              
+                
+                <a-asset-item id="brazosSRC" src="assets/modelos/brazos.glb"></a-asset-item>
+                
+                <!--Cara-->
+                <a-asset-item id="caraSRC" src="assets/modelos/cabezaCelularPortal.glb" ></a-asset-item>
+
+                <!--CabezaGigante-->
+                <a-asset-item id="cabezaGiganteSRC" src="assets/modelos/cabezaGigante.glb" ></a-asset-item>
+
+                <!--Ojos CabezaGigante-->
+                <a-asset-item id="ojosCabezaSRC" src="assets/modelos/ojosCabeza.glb" ></a-asset-item>
+
+                <!--Mesh Negro-->
+                <a-asset-item id="meshNegroSRC" src="assets/modelos/meshNegro.glb" ></a-asset-item>
+
+                <!--Mesh Wireframe-->
+                <a-asset-item id="meshNegroWireframeSRC" src="assets/modelos/meshNegroWireframe.glb" ></a-asset-item>
+
+                <!--Mesh Blanco-->
+                <a-asset-item id="meshBlancoSRC" src="assets/modelos/meshBlanco.glb" ></a-asset-item>
+
+                <!--Mesh Gris-->
+                <a-asset-item id="meshGrisSRC" src="assets/modelos/meshGris.glb" ></a-asset-item>
+
+                <!--Camino Hydra-->
+                <a-asset-item id="caminoFinalSRC" src="assets/modelos/caminoFinal.glb" ></a-asset-item>
+
+
+                <!--Hongos-->
+                <a-asset-item id="hongosSRC" src="assets/modelos/hongos.glb" ></a-asset-item>
+
+                <!--Cabezas Humanoides-->
+                <a-asset-item id="cabezasHumanoidesSRC" src="assets/modelos/cabezasHumanoides.glb" ></a-asset-item>
+
+                <!--Cabezas Interior-->
+                <a-asset-item id="cabezaInteriorSRC" src="assets/modelos/interiorCabeza.glb" ></a-asset-item>
+
+                <!--Extremidades-->
+                <a-asset-item id="extremidadesSRC" src="assets/modelos/extremidades.glb" ></a-asset-item>
+
+                <!--Suelo-->
+                <a-asset-item id="sueloSRC" src="assets/modelos/suelo.glb" ></a-asset-item>
+
+                <!--Cable Tunel-->
+                <a-asset-item id="cableTunelSRC" src="assets/modelos/cable.glb" ></a-asset-item>
+
+                <!--Cuernos-->
+                <a-asset-item id="cuernosSRC" src="assets/modelos/cuernos.glb" ></a-asset-item>
+
+                <!--Dogeside-->
+                <a-asset-item id="dogesideSRC" src="assets/modelos/dogeSide.glb" ></a-asset-item>
+
+                <!--Teclado-->
+                <a-asset-item id="tecladoSRC" src="assets/modelos/teclado.glb" ></a-asset-item>
+
+                <!--Rosa -->
+                <a-asset-item id="rosaSRC" src="assets/modelos/rosa.glb" ></a-asset-item>
+
+                <!--Pantalla pool -->
+                <a-asset-item id="pantallaPoolSRC" src="assets/modelos/pantallaPool.glb" ></a-asset-item>
+
+                <!--Ether-->
+                <a-asset-item id="etherSRC" src="assets/modelos/ether.glb" ></a-asset-item>
+
+                <!--Hydra-->
+                <canvas id="hydraCanvas" width="512" height="512"></canvas>
+
+               <!-- Artistas-->
+
+
+                <!--Cult of Dang-->
+
+                <video id="levelRebirthTN" loop="true" muted src="assets/videos/thumbnails/levelRebirth.webm"></video>
+                <img id="levelRebirthIMG" src="images/thumbnails/cultofdang/level-rebirth.png">
+
+                <!--Esteban Azuela-->
+
+                <video id="memoriasConfusasTN" loop="true" muted src="assets/videos/thumbnails/memoriasConfusas.webm"></video>
+                <img id="memoriasConfusasIMG" src="images/thumbnails/estebanAzuela/memoriasConfusas.png">
+
+                <!--Samuel-->
+                
+                <img id="samIMG" src="images/thumbnails/samuelmartinez/LT1000.png">
+
+                <!--Faiyaz Jafri-->
+                
+                <img id="faiyazIMG" src="images/thumbnails/faiyaz/NPNFTC03.png">
+                <video id="faiyazTN" loop="true" muted src="assets/videos/thumbnails/NPNFT.webm"></video>
+
+
+                <!--Memoma-->
+                
+                <img id="memomaIMG" src="images/thumbnails/memoma/NFTMMM.png">
+                <video id="memomaTN" loop="true" muted src="assets/videos/thumbnails/NFTMMM.webm"></video>
+
+               
+                <!--Salvador Herrera -->
+                
+                <img id="salvadorIMG" src="images/thumbnails/salvador/pontifex.png">
+                <video id="salvadorTN" loop="true" muted src="assets/videos/thumbnails/pontifex.webm"></video>
+
+
+                <!--Jonathan Kawchuk<video id="memomaTN" loop="true" muted src="assets/videos/thumbnails/NFTMMM.webm"></video>-->
+                
+                <img id="jonathanIMG" src="images/thumbnails/jonathan/secondGrowth.png">
+                
+
+
+                
+                <!--Textures-->
+                
+                <img id="waterIMG" src="images/water.jpg">
+
+                <img id="movieCounter" src="images/counterMovies.jpg">
+                
+               
+      </a-assets>
+
+              <!--Avatar
+              
+              <a-entity
+              id="avatar"
+              color
+              gltf-model="#avatarSRC" scale="15 15 15" position="0 -0.40 0.05" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+              </a-entity>
+              
+              -->
+
+              <a-entity id="camera" 
+              networked="template:#avatar-template;attachTemplateToLocal:false;"
+              camera="fov: 80"
+              position="0 1.6 -200"
+              spawn-in-circle="radius:3"
+              wasd-controls="fly:true;acceleration:750; enabled: true"
+              look-controls
+              rotation="0 0 0"
+              
+              floor-locked
+              >
+
+
+
+                <!--Raycaster-->
+                <a-entity id="raycasterMouse"
+                cursor
+                geometry="primitive: ring; radiusInner: 0.025; radiusOuter: 0.03"
+                material="color: white; shader: flat; opacity: 0.5"
+                position="0 0 -1"
+                raycaster="objects: .clickeable"></a-entity> 
+        
+              </a-entity>
+
+        
+              <a-entity light="type: directional; color: #7b8691; intensity: 0.5" position="-0.5 1 1"></a-entity>
+              <a-entity light="type: directional; color: #7b8691; intensity: 0.6" position="0 0 -1" rotation="0 180 0"></a-entity>
+              <a-entity light="type: ambient; color: #7b8691; intensity: 0.5" position="0 0 -1" rotation="0 180 0"></a-entity>
+   
+
+              <!--
+              <a-entity
+              id="a1"
+              
+              gltf-model="#avatarSRC" scale="30 30 30" position="0 0 0" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a2"
+              gltf-model="#avatarSRC" scale="30 30 30" position="-1 0 3" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a3"
+              gltf-model="#avatarSRC" scale="30 30 30" position="2 0 -3" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a4"
+              gltf-model="#avatarSRC" scale="30 30 30" position="4 0 -1" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a5"
+              gltf-model="#avatarSRC" scale="30 30 30" position="1 0 4" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a6"
+              gltf-model="#avatarSRC" scale="30 30 30" position="3 0 3" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a7"
+              gltf-model="#avatarSRC" scale="30 30 30" position="-4 0 5" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a8"
+              gltf-model="#avatarSRC" scale="30 30 30" position="5 0 6" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a9"
+              gltf-model="#avatarSRC" scale="30 30 30" position="5 0 3" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+              
+              <a-entity
+              id="a10"
+              gltf-model="#avatarSRC" scale="30 30 30" position="6 0 -4" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a11"
+              gltf-model="#avatarSRC" scale="30 30 30" position="2 0 8" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a12"
+              gltf-model="#avatarSRC" scale="30 30 30" position="-3 0 2" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a13"
+              gltf-model="#avatarSRC" scale="30 30 30" position="-4 0 6" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a14"
+              gltf-model="#avatarSRC" scale="30 30 30" position="-2 0 -5" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a15"
+              gltf-model="#avatarSRC" scale="30 30 30" position="-3 0 4" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a16"
+              gltf-model="#avatarSRC" scale="30 30 30" position="-7 0 5" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a17"
+              gltf-model="#avatarSRC" scale="30 30 30" position="8 0 8" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a18"
+              gltf-model="#avatarSRC" scale="30 30 30" position="3 0 7" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a19"
+              gltf-model="#avatarSRC" scale="30 30 30" position="2 0 -8" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a20"
+              gltf-model="#avatarSRC" scale="30 30 30" position="-4 0 5" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a21"
+              gltf-model="#avatarSRC" scale="30 30 30" position="-5 0 5" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+
+              <a-entity
+              id="a22"
+              gltf-model="#avatarSRC" scale="30 30 30" position="-6 0 5" rotation="0 140 0" animation="property: rotation; from: 0 130 0; to: 0 150 0; loop: true; dur: 2500; dir: alternate; easing: easeInOutElastic"></a-entity>
+              -->
+              
+              <!--Brazos escenario-->
+              <a-entity
+              id="brazos"
+              gltf-model="#brazosSRC" scale="70 70 70" position="0 0 -290" rotation="0 140 0" animation="property: rotation; from: 0 140 0; to: 0 500 0; loop: true; dur: 80000; easing: easeInOutSine"></a-entity>
+
+              <!--Hydra Escenario-->
+              <a-entity
+              id="escenarioHydra"
+              draw-canvas="hydraCanvas" canvas-updater-primitives material="src:#hydraCanvas; side: double"
+              geometry="primitive: dodecahedron; radius: 2" scale="5 5 5" position="0 40 -290"></a-entity>
+
+              <!--Mesh Negro-->
+              <a-entity
+              id="meshNegro"
+              bothsides
+              gltf-model="#meshNegroSRC" scale="50 50 50" position="0 0 80" rotation="0 -180 0"></a-entity>   
+              
+              <!--Mesh Wireframe-->
+              <a-entity
+              id="meshNegroWireframe"
+              bothsides
+              wireframe
+              color
+              gltf-model="#meshNegroWireframeSRC" scale="50 50 50" position="0 0 80" rotation="0 -180 0"></a-entity>
+
+              <!--Mesh Blanco-->
+              <a-entity
+              id="meshBlanco"
+              bothsides
+              gltf-model="#meshBlancoSRC" scale="50 50 50" position="0 0 80" rotation="0 -180 0"></a-entity>
+
+              
+              <!--Mesh Gris-->
+              <a-entity
+              id="meshGris"
+              bothsides
+              gltf-model="#meshGrisSRC" scale="50 50 50" position="0 0 80" rotation="0 -180 0"></a-entity>
+
+              <!--Camino Hydra-->
+              <a-entity
+              id="caminoHydra"
+              gltf-model="#caminoFinalSRC" scale="50 50 50" position="0 0 80" rotation="0 -180 0"></a-entity>
+
+              <!--Cara celular-->
+              
+              <a-entity
+              id="cara"
+ 
+              gltf-model="#caraSRC" scale="90 90 90" position="-32 20 -130" rotation="0 -180 0"></a-entity>
+
+              <!--Hongos-->
+              
+              <a-entity
+              id="hongos"
+ 
+              gltf-model="#hongosSRC" scale="45 45 45" position="0 -1 70" rotation="0 -180 0"></a-entity>
+
+
+              <!--Cabeza Gigante-->
+              <a-entity
+              id="cabezaGigante"
+              bothsides
+              
+               gltf-model="#cabezaGiganteSRC" scale="40 40 40" position="0 -1 -300" rotation="0 -180 0"></a-entity>
+
+              <!--Cabeza Interior-->
+              <a-entity
+              id="cabezaInterior"
+              
+              gltf-model="#cabezaInteriorSRC" scale="65 65 65" position="0 16 -300" rotation="0 -180 0"></a-entity>
+
+
+               <!--Ojos Cabeza-->
+               <a-entity
+               id="ojosCabeza"
+               gltf-model="#ojosCabezaSRC" scale="37 37 37" position="0 71 -264" rotation="0 -180 0"></a-entity>             
+
+              <!--Rosa-->
+              <a-entity
+              id="rosa"
+              gltf-model="#rosaSRC" scale="37 37 37" position="21.69 -1.1 334.667" rotation="0 -180 0"></a-entity>   
+               
+
+               
+
+              <!--Humanoides y extremidades-->
+
+              <a-entity id="humanoidesHandler"position="0 18 60" scale="1.5 1.5 1.5">
+              <a-entity
+              id="cabezasHumanoides"
+              
+              gltf-model="#cabezasHumanoidesSRC" scale="30 30 30" position="0 -14 0" rotation="0 -180 0"></a-entity>
+
+              <a-entity
+              id="extremidades"
+              
+              gltf-model="#extremidadesSRC" scale="30 30 30" position="0 -14 0" rotation="0 -180 0"></a-entity>
+
+            </a-entity>
+
+              
+              <!--Suelo-->
+              <a-entity
+              id="suelo"
+              gltf-model="#sueloSRC" scale="40 30 30" position="0 0 0" rotation="0 0 0"></a-entity>
+
+
+
+              <!--Cable Tunel-->
+              <a-entity
+              id="cableTunel"
+              bothsides
+              gltf-model="#cableTunelSRC" scale="30 30 30" position="-55 2 210" rotation="0 -180 0"></a-entity>
+
+               <!--Teclado-->
+              <a-entity
+              id="teclado"
+
+              gltf-model="#tecladoSRC" scale="30 30 30" position="-92 0 244" rotation="0 -180 0"></a-entity>
+
+              
+              <!--Cuernos-->
+              <a-entity
+              id="cuernos"
+              gltf-model="#cuernosSRC" scale="41 41 41" position="0 290 -260" rotation="0 -180 0"></a-entity>
+ 
+              <!--Dogeside-->
+              <a-entity
+              id="dogeside"
+              bothsides
+              gltf-model="#dogesideSRC" scale="40 40 40" position="50 -2 180" rotation="0 -180 0"></a-entity>
+
+
+
+              <!--Ethereum-->
+              <a-entity
+              id="etherModelDang"
+              class="clickeable"
+              raycaster-eth
+              animation="property: position; to: -48 3 322; dur: 1500; easing: easeInOutSine; loop: true; dir: alternate"
+              gltf-model="#etherSRC" scale="0.4 0.4 0.4" position="-48 2 322" rotation="0 25 0"></a-entity>
+
+              <a-entity
+              id="etherModelAzuela"
+              class="clickeable"
+              raycaster-eth
+              animation="property: position; to: 68 9 271; dur: 1500; easing: easeInOutSine; loop: true; dir: alternate"
+              gltf-model="#etherSRC" scale="0.4 0.4 0.4" position="68 6 271" rotation="0 -45 0"></a-entity>
+
+    
+
+              <!--EFECTOS ESPECIALES-->
+
+              <a-entity position="0 2.25 -15" particle-system="particleCount: 1000; color: #2a2c5e, #3d4667; size: 2; type:2; positionSpread: 400 200 1000; texture: ./images/poligono.png;"></a-entity>
+
+              <!--Obras-->
+
+
+              <a-video visible="false" id="levelRebirthVideo" src="#levelRebirthTN" width="16" height="9" scale="0.897 0.897 0.897" position="-16 9.175 127.65" rotation="-3.76 43.40 20"></a-video>
+              <a-image id="cultofdangArtwork"visible="true" class="clickeable" raycaster-obras="video:#levelRebirthTN; visible:#levelRebirthVideo; fullscreen: #levelRebirthSRC" src="#levelRebirthIMG" width="16" height="9"  scale="0.897 0.897 0.897" position="-16 9.175 127.65" rotation="-3.76 43.40 20"></a-image>
+
+    
+              <a-video visible="false" id="memoriasConfusasVideo" src="#memoriasConfusasTN" width="8" height="8" position="63 6 267" rotation="0 -40 0"></a-video>
+              <a-image id="estebanAzuelaArtwork"visible="true" class="clickeable" raycaster-obras="video:#memoriasConfusasTN; visible:#memoriasConfusasVideo; fullscreen: #memoriasConfusasSRC" src="#memoriasConfusasIMG" width="8" height="8" position="63 6 267" rotation="0 -40 0"></a-image>    
+
+              <a-image id="samArtwork"visible="true" class="clickeable" raycaster-hydra src="#samIMG" width="9" height="9" position="62 19 174" rotation="0 -240 0"></a-image>    
+
+              <a-video visible="false" id="memomaVideo" src="#memomaTN" width="16" height="9" scale="0.3 0.3 0.3" position="20.88 6.3 305" rotation="0 -35 0"></a-video>
+              <a-image id="memomaArtwork" visible="true" class="clickeable" src="#memomaIMG" scale="1.219 1.219 1.219" width="9" height="9" position="11.57 39.58 -38.73" rotation="0 -90 0"></a-image>
+              
+              <a-video visible="false" id="salvadorVideo" src="#salvadorTN" width="9" height="9" scale="0.3 0.3 0.3" position="20.88 6.3 305" rotation="0 -35 0"></a-video>
+              <a-image id="salvadorArtwork" class="clickeable" animation="property: position; to: 115.6 8.465 247.88; dur: 3000; easing: easeInOutSine; loop: true; dir: alternate" visible="true" class="clickeable" src="#salvadorIMG" scale="0.717 0.717 0.717" width="9" height="9" position="115.6 6.465 247.88" rotation="0 120 0"></a-image>
+
+              <a-image id="jonathanArtwork" visible="true" class="clickeable" src="#jonathanIMG" width="19.2" height="7.68" scale="1 1 1"  position="-57 5 325" rotation="0 25 0"></a-image>
+
+
+
+              <!--Plane Escenario-->
+              <a-plane id="escenario" src="#movieCounter" height="9" width="16" position="0 30 -270" scale="2 2 2"></a-plane>
+
+    
+            </a-scene>
+    <script>
+      // On mobile remove elements that are resource heavy
+      var isMobile = AFRAME.utils.device.isMobile();
+
+      if (isMobile) {
+        var particles = document.getElementById('particles');
+        particles.parentNode.removeChild(particles);
+      }
+    </script>
+
+<script>
+  var audio = document.getElementById("myaudio");
+  audio.volume = 0.3;
+</script>
+
+<script>
+  function onConnect () {
+    console.log("onConnect", new Date());
+  }
+</script>
+
+  
+    <script src="scripts/scripts.js"></script>
+  </body>
+</html>

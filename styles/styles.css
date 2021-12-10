@@ -1,0 +1,93 @@
+
+#levelRebirthSRC{
+    position: absolute ;
+    top: 0;
+    left: 0 ;
+    width: 100%;
+    z-index: 1000 ;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+
+
+#memoriasConfusasSRC{
+    position: absolute ;
+    top: 0;
+    left: 0 ;
+    width: 100%;
+    z-index: 1000 ;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+#hydraCanvasSam{
+    position: absolute ;
+    top: 0;
+    left: 0 ;
+    width: 100%;
+    z-index: 1000 ;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.container {
+    position: absolute ;
+    top: 0;
+    left: 0 ;
+    width: 100%;
+    z-index: 10000 ;
+    height: 100%;
+    background-color: rgb(89,98,105);
+    display:flex;
+	justify-content: center;
+	align-items: center;
+	height:100%;
+	margin: auto;
+  
+}
+
+@keyframes load {
+    0%{
+        opacity: 0.08;
+/*         font-size: 10px; */
+/* 				font-weight: 400; */
+				filter: blur(5px);
+				letter-spacing: 3px;
+        }
+    100%{
+/*         opacity: 1; */
+/*         font-size: 12px; */
+/* 				font-weight:600; */
+/* 				filter: blur(0); */
+        }
+}
+
+.animate {
+/* 	width: 350px; */
+/* 	font-size:26px; */
+	font-family: Helvetica, sans-serif, Arial;
+	animation: load 1.2s infinite 0s ease-in-out;
+	animation-direction: alternate;
+    color: #111314;
+	text-shadow: 0 0 1px #580102;
+    user-select: none;
+}
+
+.start{
+
+	font-family: Helvetica, sans-serif, Arial;
+    color: #111314;
+	text-shadow: 0 0 1px #580102;
+    user-select: none;
+}
+
+.start:hover{
+
+	font-family: Helvetica, sans-serif, Arial;
+    color: #570102;
+	text-shadow: 0 0 1px #580102;
+}
+
+
+
